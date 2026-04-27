@@ -231,7 +231,7 @@ async function drawRoute(points) {
   map.fitBounds(routeLine.getBounds());
 
   document.getElementById("info").innerText =
-    "Tổng quãng đường: " + (route.distance/1000).toFixed(2) + " km";
+    "Tổng quãng đường (tương đối): " + (route.distance/1000).toFixed(2) + " km";
 }
 
 // ===== BUILD =====
