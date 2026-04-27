@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Route giao hàng v2</title>
+  <title>Route giao hàng by_turtle v2</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
@@ -14,50 +14,58 @@
     }
 
     .left {
-      flex: 1;
+      flex: 0.7;
     }
 
     .right {
-      width: 320px;
+      flex: 1.3;
+      min-width: 350px;
       border: 1px solid #ccc;
-      padding: 10px;
+      padding: 12px;
       background: #fafafa;
     }
 
     #map { height: 500px; margin-top: 10px; }
 
     input {
-      width: 95%;
+      width: 100%;
       padding: 6px;
-      margin: 4px;
-      display: block;
+      margin: 4px 0;
     }
 
-    button { padding: 6px 12px; margin: 5px; cursor: pointer; }
+    button {
+      padding: 6px 12px;
+      margin: 5px 5px 5px 0;
+      cursor: pointer;
+    }
 
     #info { margin-top: 10px; font-weight: bold; }
-
-    .number-marker {
-      background: red;
-      color: white;
-      border-radius: 50%;
-      text-align: center;
-      line-height: 30px;
-      width: 30px;
-      height: 30px;
-      font-weight: bold;
-    }
 
     #suggestion {
       font-size: 14px;
       line-height: 1.6;
+    }
+
+    /* mobile */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .left, .right {
+        width: 100%;
+      }
+
+      #map {
+        height: 400px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<h3>🚚 Route giao hàng v2</h3>
+<h3>🚚 Route giao hàng by_turtle v2</h3>
 
 <div class="container">
 
@@ -96,13 +104,29 @@ let markers = [];
 let routeLine;
 let inputCount = 0;
 
-// ===== ADD INPUT =====
+// ===== ADD INPUT + XOÁ =====
 function addPoint() {
   inputCount++;
+
+  const wrapper = document.createElement("div");
+  wrapper.style.display = "flex";
+  wrapper.style.alignItems = "center";
+
   const input = document.createElement("input");
   input.placeholder = "Điểm " + inputCount;
   input.className = "point-input";
-  document.getElementById("inputs").appendChild(input);
+
+  const removeBtn = document.createElement("button");
+  removeBtn.innerText = "❌";
+
+  removeBtn.onclick = () => {
+    wrapper.remove();
+  };
+
+  wrapper.appendChild(input);
+  wrapper.appendChild(removeBtn);
+
+  document.getElementById("inputs").appendChild(wrapper);
 }
 
 // mặc định 3 điểm
@@ -118,22 +142,40 @@ async function geocode(address) {
   return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
 }
 
-// ===== ICON =====
+// ===== ICON ĐẸP =====
 function createNumberIcon(number) {
   return L.divIcon({
-    html: `<div class="number-marker">${number}</div>`,
-    iconSize: [30, 30]
+    html: `
+      <div style="
+        background: linear-gradient(135deg,#ff4d4f,#ff7875);
+        color: white;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-weight:bold;
+        font-size:14px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        border: 2px solid white;
+      ">
+        ${number}
+      </div>
+    `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36]
   });
 }
 
-// ===== DISTANCE (simple) =====
+// ===== DISTANCE =====
 function distance(a, b) {
   return Math.sqrt(
     (a[0]-b[0])**2 + (a[1]-b[1])**2
   );
 }
 
-// ===== GREEDY OPTIMIZE =====
+// ===== OPTIMIZE =====
 function optimizeRoute(points, addresses) {
 
   let orderedPoints = [points[0]];
@@ -166,7 +208,7 @@ function optimizeRoute(points, addresses) {
   return { orderedPoints, orderedAddresses };
 }
 
-// ===== OSRM ROUTE =====
+// ===== ROUTE =====
 async function drawRoute(points) {
 
   const coords = points.map(p => p[1]+","+p[0]).join(";");
@@ -220,15 +262,15 @@ async function buildRoute() {
     points.push(p);
   }
 
-  // ===== OPTIMIZE =====
   const { orderedPoints, orderedAddresses } =
     optimizeRoute(points, addresses);
 
-  // ===== GỢI Ý CUNG ĐƯỜNG =====
-  let html = "";
-  orderedAddresses.forEach((addr, i) => {
-    html += `<b>${i+1}</b>. ${addr}<br>`;
+  // ===== GỢI Ý =====
+  let html = "<ol>";
+  orderedAddresses.forEach((addr) => {
+    html += `<li>${addr}</li>`;
   });
+  html += "</ol>";
 
   document.getElementById("suggestion").innerHTML = html;
 
@@ -243,7 +285,6 @@ async function buildRoute() {
     markers.push(marker);
   });
 
-  // ===== ROUTE =====
   await drawRoute(orderedPoints);
 }
 
