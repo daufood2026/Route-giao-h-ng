@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Route giao hàng by_Turtle v2</title>
+  <title>Route giao hàng by_turtle v2</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
@@ -50,22 +50,16 @@
       line-height: 1.6;
     }
 
-    /* 🔥 FIX ICON KHÔNG CÓ NỀN TRẮNG */
+    /* 🔥 bỏ nền trắng của marker */
     .leaflet-div-icon {
       background: transparent !important;
       border: none !important;
     }
 
-    /* MOBILE */
+    /* mobile */
     @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-
-      .left, .right {
-        width: 100%;
-      }
-
+      .container { flex-direction: column; }
+      .left, .right { width: 100%; }
       #map { height: 400px; }
     }
   </style>
@@ -73,7 +67,7 @@
 
 <body>
 
-<h3>🚚 Route giao hàng by_Turtle v2</h3>
+<h3>🚚 Route giao hàng by_turtle v2</h3>
 
 <div class="container">
 
@@ -137,7 +131,7 @@ function addPoint() {
   document.getElementById("inputs").appendChild(wrapper);
 }
 
-// default
+// mặc định 3 điểm
 addPoint(); addPoint(); addPoint();
 
 // ===== GEOCODE =====
@@ -150,7 +144,7 @@ async function geocode(address) {
   return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
 }
 
-// ===== ICON TRÒN ĐẸP =====
+// ===== ICON TRÒN =====
 function createNumberIcon(number) {
   return L.divIcon({
     html: `
@@ -172,7 +166,7 @@ function createNumberIcon(number) {
     `,
     iconSize: [36, 36],
     iconAnchor: [18, 36],
-    className: "" // 🔥 bỏ class mặc định
+    className: ""
   });
 }
 
@@ -273,14 +267,35 @@ async function buildRoute() {
   const { orderedPoints, orderedAddresses } =
     optimizeRoute(points, addresses);
 
+  // ===== GỢI Ý =====
   let html = "<ol>";
   orderedAddresses.forEach(addr => {
     html += `<li>${addr}</li>`;
   });
   html += "</ol>";
 
+  // ===== LINK GOOGLE MAPS (tọa độ chuẩn) =====
+  const gmapUrl = "https://www.google.com/maps/dir/" +
+    orderedPoints.map(p => `${p[0]},${p[1]}`).join("/");
+
+  html += `
+    <a href="${gmapUrl}" target="_blank" style="
+      display:inline-block;
+      margin-top:10px;
+      color:white;
+      background:#4285F4;
+      padding:8px 12px;
+      border-radius:6px;
+      text-decoration:none;
+      font-weight:bold;
+    ">
+      🗺️ Mở trên Google Maps
+    </a>
+  `;
+
   document.getElementById("suggestion").innerHTML = html;
 
+  // ===== MARKER =====
   orderedPoints.forEach((p, i) => {
     const marker = L.marker(p, {
       icon: createNumberIcon(i+1)
