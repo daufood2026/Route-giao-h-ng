@@ -102,6 +102,13 @@
   <div class="left">
     <div id="inputs"></div>
 
+    <div style="margin:15px 0;padding:10px;background:#f7f7f7;border-radius:8px">
+      <b>Dịch vụ</b><br><br>
+      <label><input type="radio" name="service" value="2W"> Xanh Deli 2W</label>
+      &nbsp;&nbsp;
+      <label><input type="radio" name="service" value="4W" checked> Xanh Deli 4W</label>
+    </div>
+
     <button class="add" onclick="addPoint()">+ Thêm điểm</button>
     <button class="run" onclick="buildRoute()">🚀 Vẽ route</button>
 
@@ -217,7 +224,9 @@ async function drawRoute(points){
     .map(p=>`&via=${p[0]},${p[1]}`)
     .join("");
 
-  const url=`https://router.hereapi.com/v8/routes?transportMode=car&origin=${origin}&destination=${dest}${via}&return=polyline,summary&apiKey=${API_KEY}`;
+  const service=document.querySelector('input[name="service"]:checked').value;
+  const transportMode = service==="2W" ? "scooter" : "car";
+  const url=`https://router.hereapi.com/v8/routes?transportMode=${transportMode}&origin=${origin}&destination=${dest}${via}&return=polyline,summary&apiKey=${API_KEY}`;
 
   const res=await fetch(url);
   const data=await res.json();
