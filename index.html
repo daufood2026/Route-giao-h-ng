@@ -1,324 +1,1318 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
+
 <head>
-  <title>Route giao hàng v3.0</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body{
-      font-family:'Segoe UI';
-      margin:20px;
-      background:#f5f7fb;
-      color:#333;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    .watermark{
-      position:fixed;
-      top:10px;
-      right:15px;
-      font-size:11px;
-      color:rgba(0,0,0,0.35);
-      background:rgba(255,255,255,0.6);
-      padding:4px 10px;
-      border-radius:8px;
-      pointer-events:none;
-      z-index:9999;
-    }
+<title>Mini TMS - Route V3.5</title>
 
-    h3{margin-bottom:15px;}
-
-    .container{
-      display:flex;
-      gap:20px;
-    }
-
-    .left,.right{
-      background:white;
-      padding:15px;
-      border-radius:12px;
-      box-shadow:0 6px 20px rgba(0,0,0,0.05);
-    }
-
-    .left{flex:0.8;}
-    .right{flex:1.2;}
-
-    #map{
-      height:500px;
-      margin-top:15px;
-      border-radius:12px;
-      overflow:hidden;
-    }
-
-    .input-row{
-      display:flex;
-      gap:6px;
-      margin-bottom:8px;
-    }
-
-    input{
-      flex:1;
-      padding:10px;
-      border:1px solid #ddd;
-      border-radius:8px;
-    }
-
-    button{
-      padding:9px 12px;
-      border:none;
-      border-radius:8px;
-      cursor:pointer;
-    }
-
-    .add{background:#00AB9F;color:white;}
-    .run{background:#007bff;color:white;}
-
-    #info{
-      margin-top:10px;
-      font-size:13px;
-      color:#666;
-    }
-
-    #suggestion{
-      font-size:14px;
-      line-height:1.6;
-    }
-
-    .start{
-      color:#00AB9F;
-      font-weight:600;
-      margin-bottom:6px;
-    }
-  </style>
-</head>
-
-<body>
-
-<div class="watermark">by Turtle version3</div>
-
-<h3>🚚 DELIVERY ROUTE - Gợi ý di chuyển/ giao hàng</h3>
-
-<div class="container">
-
-  <div class="left">
-    <div id="inputs"></div>
-
-    <div style="margin:15px 0;padding:10px;background:#f7f7f7;border-radius:8px">
-      <b>Dịch vụ</b><br><br>
-      <label><input type="radio" name="service" value="2W"> Xanh Deli 2W</label>
-      &nbsp;&nbsp;
-      <label><input type="radio" name="service" value="4W" checked> Xanh Deli 4W</label>
-    </div>
-
-    <button class="add" onclick="addPoint()">+ Thêm điểm</button>
-    <button class="run" onclick="buildRoute()">🚀 Vẽ route</button>
-
-    <div id="info">Tổng quãng đường: 0 km</div>
-  </div>
-
-  <div class="right">
-    <h4>📌 Lộ trình gợi ý</h4>
-    <div id="suggestion">Chưa có dữ liệu</div>
-  </div>
-
-</div>
-
-<div id="map"></div>
+<link rel="stylesheet"
+href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"/>
 
 <script src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
 <script src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
 <script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
 <script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
-<link rel="stylesheet" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"/>
+
+<style>
+
+*{
+box-sizing:border-box;
+}
+
+body{
+
+margin:0;
+
+font-family:Segoe UI;
+
+background:#f3f5f8;
+
+color:#333;
+
+}
+
+header{
+
+height:65px;
+
+background:#00AB9F;
+
+color:white;
+
+display:flex;
+
+align-items:center;
+
+padding:0 25px;
+
+font-size:22px;
+
+font-weight:bold;
+
+box-shadow:0 3px 10px rgba(0,0,0,.15);
+
+}
+
+header small{
+
+font-size:13px;
+
+margin-left:10px;
+
+font-weight:400;
+
+opacity:.9;
+
+}
+
+.container{
+
+display:flex;
+
+padding:20px;
+
+gap:20px;
+
+}
+
+.left{
+
+width:420px;
+
+background:white;
+
+border-radius:12px;
+
+padding:18px;
+
+box-shadow:0 5px 20px rgba(0,0,0,.08);
+
+}
+
+.right{
+
+flex:1;
+
+background:white;
+
+border-radius:12px;
+
+padding:15px;
+
+box-shadow:0 5px 20px rgba(0,0,0,.08);
+
+}
+
+.card{
+
+background:#fafafa;
+
+border:1px solid #ececec;
+
+border-radius:10px;
+
+padding:15px;
+
+margin-bottom:15px;
+
+}
+
+.card h3{
+
+margin:0 0 15px;
+
+font-size:17px;
+
+}
+
+.input-row{
+
+display:flex;
+
+gap:6px;
+
+margin-bottom:8px;
+
+}
+
+input[type=text]{
+
+flex:1;
+
+padding:10px;
+
+border-radius:8px;
+
+border:1px solid #ddd;
+
+font-size:14px;
+
+}
+
+input[type=number]{
+
+padding:8px;
+
+width:80px;
+
+border-radius:8px;
+
+border:1px solid #ddd;
+
+}
+
+button{
+
+cursor:pointer;
+
+border:none;
+
+border-radius:8px;
+
+padding:10px 15px;
+
+font-size:14px;
+
+}
+
+.add{
+
+background:#00AB9F;
+
+color:white;
+
+}
+
+.run{
+
+background:#1976d2;
+
+color:white;
+
+}
+
+.copy{
+
+background:#673ab7;
+
+color:white;
+
+}
+
+#map{
+
+height:650px;
+
+border-radius:12px;
+
+overflow:hidden;
+
+}
+
+#suggestion{
+
+line-height:1.8;
+
+font-size:14px;
+
+}
+
+.start{
+
+font-weight:bold;
+
+color:#00AB9F;
+
+margin-bottom:10px;
+
+}
+
+.price-row{
+
+display:flex;
+
+justify-content:space-between;
+
+margin:8px 0;
+
+}
+
+.price-row.total{
+
+font-size:22px;
+
+font-weight:bold;
+
+color:#e53935;
+
+padding-top:12px;
+
+border-top:2px solid #eee;
+
+margin-top:15px;
+
+}
+
+.badge{
+
+display:inline-block;
+
+padding:6px 10px;
+
+border-radius:20px;
+
+background:#00AB9F;
+
+color:white;
+
+font-size:12px;
+
+margin-bottom:10px;
+
+}
+
+.service{
+
+display:flex;
+
+gap:20px;
+
+margin:10px 0 15px;
+
+}
+
+label{
+
+cursor:pointer;
+
+}
+
+.action{
+
+display:flex;
+
+gap:10px;
+
+margin-top:10px;
+
+}
+
+.info{
+
+margin-top:10px;
+
+font-size:13px;
+
+color:#666;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+🚚 Mini TMS
+
+<small>Route Optimizer & Pricing v3.5</small>
+
+</header>
+
+<div class="container">
+
+<div class="left">
+
+<div class="card">
+
+<h3>📍 Thông tin tuyến</h3>
+
+<input
+id="routeName"
+type="text"
+placeholder="Tên tuyến (VD: AEON Long Biên)"
+style="width:100%;margin-bottom:10px">
+
+<div class="service">
+
+<label>
+
+<input
+type="radio"
+name="service"
+value="2W">
+
+Xanh Deli 2W
+
+</label>
+
+<label>
+
+<input
+type="radio"
+name="service"
+value="4W"
+checked>
+
+Xanh Deli 4W
+
+</label>
+
+</div>
+
+<div id="inputs"></div>
+
+<div class="action">
+
+<button
+class="add"
+onclick="addPoint()">
+
++ Thêm điểm
+
+</button>
+
+<button
+class="run"
+onclick="buildRoute()">
+
+🚀 Vẽ Route
+
+</button>
+
+</div>
+
+<div
+id="info"
+class="info">
+
+Tổng quãng đường: 0 km
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>📌 Lộ trình</h3>
+
+<div id="suggestion">
+
+Chưa có dữ liệu
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>💰 Bảng tính giá</h3>
+
+<div class="badge" id="serviceBadge">
+
+Xanh Deli 4W
+
+</div>
+
+<div class="price-row">
+
+<span>Quãng đường</span>
+
+<b id="km">0 km</b>
+
+</div>
+
+<div class="price-row">
+
+<span>Đơn giá/km</span>
+
+<b id="pricePerKm">
+
+18.000
+
+</b>
+
+</div>
+
+<div class="price-row">
+
+<span>Tiền KM</span>
+
+<b id="priceDistance">
+
+0
+
+</b>
+
+</div>
+
+<div class="price-row">
+
+<span>
+
+Điểm dừng
+
+</span>
+
+<div>
+
+<input
+id="stopCount"
+type="number"
+value="0">
+
+×
+
+10.000
+
+</div>
+
+</div>
+
+<div class="price-row">
+
+<span>
+
+Phí chờ (giờ)
+
+</span>
+
+<div>
+
+<input
+id="waitingHour"
+type="number"
+step="0.5"
+value="0">
+
+×
+
+60.000
+
+</div>
+
+</div>
+
+<div class="price-row">
+
+<span>
+
+Bốc xếp
+
+</span>
+
+<div>
+
+<input
+type="checkbox"
+id="loading">
+
+140.000
+
+</div>
+
+</div>
+
+<div class="price-row total">
+
+<span>TỔNG</span>
+
+<span id="grandTotal">
+
+0
+
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="right">
+
+<div id="map"></div>
+
+</div>
+
+</div>
 
 <script>
 
-// ===== API =====
-const API_KEY = "VkhQNy-v_IW-P28JVNho3NYF4dasL4qGr9N-61082nY";
+const API_KEY="YOUR_HERE_API_KEY";
 
-// ===== MAP =====
-const platform = new H.service.Platform({apikey:API_KEY});
-const layers = platform.createDefaultLayers();
+const platform=new H.service.Platform({
 
-const map = new H.Map(
-  document.getElementById("map"),
-  layers.vector.normal.map,
-  {zoom:12,center:{lat:21.0285,lng:105.8542}}
+apikey:API_KEY
+
+});
+
+const layers=platform.createDefaultLayers();
+
+const map=new H.Map(
+
+document.getElementById("map"),
+
+layers.vector.normal.map,
+
+{
+
+zoom:12,
+
+center:{
+
+lat:21.0285,
+
+lng:105.8542
+
+}
+
+});
+
+window.addEventListener(
+
+"resize",
+
+()=>map.getViewPort().resize()
+
 );
 
-window.addEventListener("resize",()=>map.getViewPort().resize());
-new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-H.ui.UI.createDefault(map,layers);
+new H.mapevents.Behavior(
 
-// ===== INPUT =====
-let count=0;
+new H.mapevents.MapEvents(map)
+
+);
+
+H.ui.UI.createDefault(
+
+map,
+
+layers
+
+);
+
+// ===== P2 tiếp tục từ đây =====
+
+let count = 0;
+
+let routeGroup = null;
+let markers = [];
+let totalDistance = 0;
 
 function addPoint(){
-  count++;
 
-  let label = count===1
-    ? "Điểm khởi hành / Kho đóng hàng"
-    : `Điểm đến ${count-1}`;
+    count++;
 
-  const div=document.createElement("div");
-  div.className="input-row";
+    let label =
+        count===1
+        ? "Điểm xuất phát / Kho"
+        : "Điểm giao "+(count-1);
 
-  div.innerHTML=`
-    <input class="point-input" placeholder="${label}">
-    ${count>2?'<button onclick="this.parentElement.remove()" style="background:#dc3545;color:white">❌</button>':''}
-  `;
+    const div=document.createElement("div");
 
-  document.getElementById("inputs").appendChild(div);
-}
+    div.className="input-row";
 
-addPoint();addPoint();addPoint();
+    div.innerHTML=`
 
-// ===== GEOCODE =====
-async function geocode(addr){
-  try{
-    const res=await fetch(`https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(addr)}&limit=1&apiKey=${API_KEY}`);
-    const data=await res.json();
-    if(data.items?.length)
-      return [data.items[0].position.lat,data.items[0].position.lng];
-  }catch{}
-  return null;
-}
+    <input
+        class="point-input"
+        placeholder="${label}">
 
-// ===== DIST =====
-const dist=(a,b)=>Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2);
-
-// ===== OPTIMIZE =====
-function optimize(points,addrs){
-  let op=[points[0]],oa=[addrs[0]];
-  let rp=points.slice(1),ra=addrs.slice(1);
-
-  while(rp.length){
-    let last=op.at(-1),idx=0,min=dist(last,rp[0]);
-
-    for(let i=1;i<rp.length;i++){
-      let d=dist(last,rp[i]);
-      if(d<min){min=d;idx=i;}
+    ${
+        count>2
+        ? `<button
+            style="background:#e53935;color:white"
+            onclick="this.parentElement.remove()">
+            ❌
+           </button>`
+        :""
     }
 
-    op.push(rp[idx]);
-    oa.push(ra[idx]);
-    rp.splice(idx,1);
-    ra.splice(idx,1);
-  }
+    `;
 
-  return {op,oa};
+    document
+        .getElementById("inputs")
+        .appendChild(div);
+
 }
 
-// ===== ROUTE =====
-let routeGroup=null;
-let markers=[];
+addPoint();
+addPoint();
+addPoint();
+
+async function geocode(address){
+
+    const url=
+    `https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(address)}&limit=1&apiKey=${API_KEY}`;
+
+    const res=await fetch(url);
+
+    const data=await res.json();
+
+    if(data.items.length===0){
+
+        return null;
+
+    }
+
+    return [
+
+        data.items[0].position.lat,
+
+        data.items[0].position.lng
+
+    ];
+
+}
+
+function distance(a,b){
+
+    return Math.sqrt(
+
+        (a[0]-b[0])**2+
+
+        (a[1]-b[1])**2
+
+    );
+
+}
+
+function optimize(points,address){
+
+    let resultPoint=[points[0]];
+
+    let resultAddress=[address[0]];
+
+    let remainPoint=points.slice(1);
+
+    let remainAddress=address.slice(1);
+
+    while(remainPoint.length){
+
+        let last=resultPoint[resultPoint.length-1];
+
+        let index=0;
+
+        let min=distance(last,remainPoint[0]);
+
+        for(let i=1;i<remainPoint.length;i++){
+
+            let d=distance(last,remainPoint[i]);
+
+            if(d<min){
+
+                min=d;
+
+                index=i;
+
+            }
+
+        }
+
+        resultPoint.push(remainPoint[index]);
+
+        resultAddress.push(remainAddress[index]);
+
+        remainPoint.splice(index,1);
+
+        remainAddress.splice(index,1);
+
+    }
+
+    return{
+
+        points:resultPoint,
+
+        address:resultAddress
+
+    };
+
+}
 
 async function drawRoute(points){
 
-  if(routeGroup) map.removeObject(routeGroup);
-  routeGroup=new H.map.Group();
+    if(routeGroup){
 
-  const origin=`${points[0][0]},${points[0][1]}`;
-  const dest=`${points.at(-1)[0]},${points.at(-1)[1]}`;
+        map.removeObject(routeGroup);
 
-  let via=points.slice(1,-1)
-    .map(p=>`&via=${p[0]},${p[1]}`)
-    .join("");
+    }
 
-  const service=document.querySelector('input[name="service"]:checked').value;
-  const transportMode = service==="2W" ? "scooter" : "car";
-  const url=`https://router.hereapi.com/v8/routes?transportMode=${transportMode}&origin=${origin}&destination=${dest}${via}&return=polyline,summary&apiKey=${API_KEY}`;
+    routeGroup=new H.map.Group();
 
-  const res=await fetch(url);
-  const data=await res.json();
+    const service=document.querySelector(
+        'input[name="service"]:checked'
+    ).value;
 
-  let total=0;
+    document.getElementById("serviceBadge").innerHTML=
 
-  data.routes[0].sections.forEach(sec=>{
-    const line=H.geo.LineString.fromFlexiblePolyline(sec.polyline);
+        service==="2W"
 
-    const poly=new H.map.Polyline(line,{
-      style:{strokeColor:"#00AB9F",lineWidth:5}
+        ?"Xanh Deli 2W"
+
+        :"Xanh Deli 4W";
+
+    const transportMode=
+
+        service==="2W"
+
+        ?"scooter"
+
+        :"car";
+
+    const origin=`${points[0][0]},${points[0][1]}`;
+
+    const destination=`${points.at(-1)[0]},${points.at(-1)[1]}`;
+
+    let via=
+
+        points
+
+        .slice(1,-1)
+
+        .map(p=>`&via=${p[0]},${p[1]}`)
+
+        .join("");
+
+    const url=
+
+`https://router.hereapi.com/v8/routes?transportMode=${transportMode}&origin=${origin}&destination=${destination}${via}&return=polyline,summary&apiKey=${API_KEY}`;
+
+    const res=await fetch(url);
+
+    const data=await res.json();
+
+    totalDistance=0;
+
+    data.routes[0].sections.forEach(section=>{
+
+        const line=
+
+        H.geo.LineString.fromFlexiblePolyline(
+
+            section.polyline
+
+        );
+
+        const polyline=
+
+        new H.map.Polyline(
+
+            line,
+
+            {
+
+                style:{
+
+                    strokeColor:"#00AB9F",
+
+                    lineWidth:5
+
+                }
+
+            }
+
+        );
+
+        routeGroup.addObject(polyline);
+
+        totalDistance+=section.summary.length;
+
     });
 
-    routeGroup.addObject(poly);
-    total+=sec.summary.length;
-  });
+    map.addObject(routeGroup);
 
-  map.addObject(routeGroup);
-  map.getViewModel().setLookAtData({bounds:routeGroup.getBoundingBox()});
+    map.getViewModel().setLookAtData({
 
-  document.getElementById("info").innerText=
-    "Tổng quãng đường (tương đối): "+(total/1000).toFixed(2)+" km";
+        bounds:routeGroup.getBoundingBox()
+
+    });
+
+    totalDistance=
+
+        totalDistance/1000;
+
+    document.getElementById("info").innerHTML=
+
+        "Tổng quãng đường: "
+
+        +totalDistance.toFixed(2)
+
+        +" km";
+
+    document.getElementById("km").innerHTML=
+
+        totalDistance.toFixed(2)+" km";
+
 }
 
-// ===== BUILD =====
 async function buildRoute(){
 
-  markers.forEach(m=>map.removeObject(m));
-  markers=[];
+    markers.forEach(m=>map.removeObject(m));
 
-  let inputs=document.querySelectorAll(".point-input");
-  let addrs=[];
+    markers=[];
 
-  inputs.forEach(i=>{
-    if(i.value.trim()) addrs.push(i.value.trim());
-  });
+    let inputs=document.querySelectorAll(".point-input");
 
-  if(addrs.length<2) return alert("Nhập ít nhất 2 điểm");
+    let address=[];
 
-  let points=[];
+    inputs.forEach(i=>{
 
-  for(let a of addrs){
-    let p=await geocode(a);
-    if(!p) return alert("Không tìm thấy "+a);
-    points.push(p);
-  }
+        if(i.value.trim()){
 
-  const {op,oa}=optimize(points,addrs);
+            address.push(
 
-  // ===== UI ROUTE PANEL (FIX START + 1-N) =====
-  let html="";
+                i.value.trim()
 
-  html+=`<div class="start">Start: ${oa[0]}</div>`;
+            );
 
-  for(let i=1;i<oa.length;i++){
-    html+=`${i}. ${oa[i]}<br>`;
-  }
+        }
 
-  const gWay=op.slice(1,-1).map(p=>`${p[0]},${p[1]}`).join('|');
+    });
 
-  html+=`
-  <br>
-  <a target="_blank"
-  href="https://www.google.com/maps/dir/?api=1&origin=${op[0]}&destination=${op.at(-1)}&waypoints=${gWay}">
-  📍 Mở Google Maps</a>`;
+    if(address.length<2){
 
-  document.getElementById("suggestion").innerHTML=html;
+        alert("Nhập ít nhất 2 điểm.");
 
-  // ===== MARKER =====
-  op.forEach((p,i)=>{
-    const icon=new H.map.DomIcon(`
-      <div style="
-        background:${i===0?'#00AB9F':'#ff4d4f'};
-        color:white;
-        width:28px;height:28px;
-        border-radius:50%;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-weight:bold">
-        ${i===0?'S':i}
-      </div>`);
+        return;
 
-    const m=new H.map.DomMarker({lat:p[0],lng:p[1]},{icon});
-    map.addObject(m);
-    markers.push(m);
-  });
+    }
 
-  await drawRoute(op);
+    let points=[];
+
+    for(let a of address){
+
+        const p=await geocode(a);
+
+        if(!p){
+
+            alert("Không tìm thấy địa chỉ:\n"+a);
+
+            return;
+
+        }
+
+        points.push(p);
+
+    }
+
+    const optimizeResult=
+
+        optimize(points,address);
+
+    let routePoint=
+
+        optimizeResult.points;
+
+    let routeAddress=
+
+        optimizeResult.address;
+
+    let html=
+
+    `<div class="start">
+
+    Start:
+
+    ${routeAddress[0]}
+
+    </div>`;
+
+    for(let i=1;i<routeAddress.length;i++){
+
+        html+=`${i}. ${routeAddress[i]}<br>`;
+
+    }
+
+    document.getElementById("suggestion").innerHTML=
+
+        html;
+
+    routePoint.forEach((p,index)=>{
+
+        const icon=
+
+        new H.map.DomIcon(
+
+`<div style="
+width:28px;
+height:28px;
+border-radius:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+background:${index==0?"#00AB9F":"#ff4d4f"};
+color:white;
+font-weight:bold;">
+${index==0?"S":index}
+</div>`
+        );
+
+        const marker=
+
+        new H.map.DomMarker(
+
+            {
+
+                lat:p[0],
+
+                lng:p[1]
+
+            },
+
+            {
+
+                icon
+
+            }
+
+        );
+
+        map.addObject(marker);
+
+        markers.push(marker);
+
+    });
+
+    await drawRoute(routePoint);
+
+    // ===== P3 sẽ bắt đầu từ đây =====
+//----------------------------------------------------
+// PRICING ENGINE
+//----------------------------------------------------
+
+function formatMoney(v){
+
+    return Number(v).toLocaleString("vi-VN")+" đ";
+
 }
+
+function calculatePrice(){
+
+    const service=document.querySelector(
+        'input[name="service"]:checked'
+    ).value;
+
+    let pricePerKm=0;
+
+    let stopFee=0;
+
+    let waitingFee=0;
+
+    let loadingFee=0;
+
+    if(service==="2W"){
+
+        pricePerKm=7000;
+
+        stopFee=5000;
+
+        waitingFee=40000;
+
+        loadingFee=0;
+
+    }else{
+
+        pricePerKm=18000;
+
+        stopFee=10000;
+
+        waitingFee=60000;
+
+        loadingFee=140000;
+
+    }
+
+    document.getElementById("pricePerKm").innerHTML=
+
+        formatMoney(pricePerKm);
+
+    let stop=
+
+        Number(
+
+            document.getElementById("stopCount").value||0
+
+        );
+
+    let waiting=
+
+        Number(
+
+            document.getElementById("waitingHour").value||0
+
+        );
+
+    let loading=
+
+        document.getElementById("loading").checked
+
+        ?loadingFee
+
+        :0;
+
+    let distancePrice=
+
+        totalDistance*pricePerKm;
+
+    let stopPrice=
+
+        stop*stopFee;
+
+    let waitingPrice=
+
+        waiting*waitingFee;
+
+    let total=
+
+        distancePrice+
+
+        stopPrice+
+
+        waitingPrice+
+
+        loading;
+
+    document.getElementById("priceDistance").innerHTML=
+
+        formatMoney(distancePrice);
+
+    document.getElementById("grandTotal").innerHTML=
+
+        formatMoney(total);
+
+}
+
+//--------------------------------------------
+// EVENT
+//--------------------------------------------
+
+document
+
+.querySelectorAll(
+
+'input[name="service"]'
+
+)
+
+.forEach(i=>{
+
+    i.addEventListener(
+
+        "change",
+
+        calculatePrice
+
+    );
+
+});
+
+document
+
+.getElementById("stopCount")
+
+.addEventListener(
+
+"input",
+
+calculatePrice
+
+);
+
+document
+
+.getElementById("waitingHour")
+
+.addEventListener(
+
+"input",
+
+calculatePrice
+
+);
+
+document
+
+.getElementById("loading")
+
+.addEventListener(
+
+"change",
+
+calculatePrice
+
+);
+
+//--------------------------------------------
+// COPY LINK
+//--------------------------------------------
+
+function copyRoute(){
+
+    let service=
+
+    document.querySelector(
+
+        'input[name="service"]:checked'
+
+    ).value;
+
+    let points=[];
+
+    document
+
+    .querySelectorAll(".point-input")
+
+    .forEach(i=>{
+
+        if(i.value.trim()){
+
+            points.push(
+
+                i.value.trim()
+
+            );
+
+        }
+
+    });
+
+    let obj={
+
+        service,
+
+        points,
+
+        stop:
+
+        document.getElementById("stopCount").value,
+
+        waiting:
+
+        document.getElementById("waitingHour").value,
+
+        loading:
+
+        document.getElementById("loading").checked
+
+    };
+
+    let str=
+
+    btoa(
+
+        encodeURIComponent(
+
+            JSON.stringify(obj)
+
+        )
+
+    );
+
+    let url=
+
+    location.origin+
+
+    location.pathname+
+
+    "?data="+str;
+
+    navigator.clipboard.writeText(url);
+
+    alert("Đã copy link.");
+
+}
+
+//--------------------------------------------
+// RESTORE LINK
+//--------------------------------------------
+
+window.onload=async()=>{
+
+    const params=
+
+    new URLSearchParams(
+
+        location.search
+
+    );
+
+    const data=params.get("data");
+
+    if(!data){
+
+        calculatePrice();
+
+        return;
+
+    }
+
+    try{
+
+        let obj=
+
+        JSON.parse(
+
+            decodeURIComponent(
+
+                atob(data)
+
+            )
+
+        );
+
+        document.getElementById("inputs").innerHTML="";
+
+        count=0;
+
+        obj.points.forEach(()=>addPoint());
+
+        let input=
+
+        document.querySelectorAll(".point-input");
+
+        obj.points.forEach((p,i)=>{
+
+            input[i].value=p;
+
+        });
+
+        document.querySelector(
+
+            `input[value="${obj.service}"]`
+
+        ).checked=true;
+
+        document.getElementById("stopCount").value=obj.stop;
+
+        document.getElementById("waitingHour").value=obj.waiting;
+
+        document.getElementById("loading").checked=obj.loading;
+
+        await buildRoute();
+
+        calculatePrice();
+
+    }catch(e){
+
+        console.log(e);
+
+    }
+
+}
+
+calculatePrice();
 
 </script>
 
 </body>
+
 </html>
+  
+}
+
+  
